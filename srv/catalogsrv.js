@@ -24,6 +24,12 @@ module.exports = srv => {    // srv is arrow function this name may be diffrent 
     });
 
     // CREATE
+
+    srv.before('CREATE','BooksSet',async(req,res)=>{
+        if(req.data.price<0 ){
+            req.error(400,'Price cannot be negative');
+        }
+    });
     srv.on('CREATE', 'BooksSet', async (req, res) => {  // async is used to handle the asynchronous operation // req is request object // res is response object
         let results = [];
         results = await db.run([
@@ -63,6 +69,10 @@ module.exports = srv => {    // srv is arrow function this name may be diffrent 
         return results;
     })
 
+    srv.after('UPDATE','BooksSet',async(req,res)=>{
+        console.log('records update of ID',req.data.ID);
+    });
+
     // DELETE
 
     // srv.on('DELETE', 'BooksSet', async (req, res) => {
@@ -100,9 +110,8 @@ module.exports = srv => {    // srv is arrow function this name may be diffrent 
                 DELETE.from(books).where({ ID: req.data.ID })
             );
 
-
             // ⚠️ Force custom response
-            req._.res.status(200).json(recordsToDelete);
+            req._.res.status(200).json(recordsToDelete);  // Send the deleted records as response // for this we need to change status to 200 and send the deleted records as response
 
             // Step 3: Return deleted records
             return recordsToDelete;
